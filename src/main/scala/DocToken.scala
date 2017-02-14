@@ -1,7 +1,18 @@
+import DocToken.DocKind
+
 /**
   * Represents a token from a line of a scaladoc.
   */
-sealed trait DocToken
+case class DocToken(kind: DocKind, name: Option[String], body: String) {
+
+  override def toString: String = name match {
+    case Some(n) => s"$kind(name=$n, body=$body)"
+    case _ => s"$kind($body)"
+  }
+
+  // TODO: Encapsulate to contrib package?
+  def append(docToken: DocToken) : DocToken = copy(body = s"$body\n${docToken.body}")
+}
 
 /**
   * Companion object containing the classes required for describing an ScalaDoc token.
@@ -11,10 +22,21 @@ sealed trait DocToken
   */
 object DocToken {
 
+  def apply(kind: DocKind, body: String): DocToken =
+    new DocToken(kind, None, body)
+
+  def apply(kind: DocKind, name: String, body: String): DocToken =
+    new DocToken(kind, Option(name), body)
+
+  /**
+    * Phantom trait used for representing each type of documentation label.
+    */
+  sealed trait DocKind
+
   /**
     * Placed in the class comment will describe the primary constructor.
     */
-  case class DocConstructor(body: String) extends DocToken
+  case object DocConstructor extends DocKind
 
   /**
     * TODO
@@ -24,99 +46,90 @@ object DocToken {
     * constructor or class (documents primary constructor). The
     * <name> argument must correspond to an existing value parameter.
     */
-  case class DocParam(name: String, body: String) extends DocToken {
-    override def toString: String = s"DocParam(name=$name, body=$body)"
-  }
+  case object DocParam extends DocKind
 
   /**
-    *
     * TODO
-    *
     *
     * Documents a specific type parameter of a method, class, trait or abstract type.
     * One @tparam tag allowed per type parameter in comment for method, class, trait
     * or abstract type. <name> argument must correspond to an existing type parameter.
     */
-  case class DocTypeParam(name: String, body: String) extends DocToken {
-    override def toString: String = s"DocTypeParam(name=$name, body=$body)"
-  }
-
+  case object DocTypeParam extends DocKind
   /**
     * Documents the return value of a method.
     */
-  case class DocReturn(body: String) extends DocToken
+  case object DocReturn extends DocKind
 
   /**
     * Documents an exception type that may be thrown by a method or class constructor.
     */
-  case class DocThrows(name: String, body: String) extends DocToken {
-    override def toString: String = s"DocThrows(name=$name, body=$body)"
-  }
+  case object DocThrows extends DocKind
 
   /**
     * Points to other sources of information such as external documentation
     * or related entities in the documentation.
     */
-  case class DocSee(body: String) extends DocToken
+  case object DocSee extends DocKind
 
   /**
     * Documents pre- and post-conditions as well as other notable requirements
     * or restrictions.
     */
-  case class DocNote(body: String) extends DocToken
+  case object DocNote extends DocKind
 
   /**
     * Provides example code and related descriptions.
     */
-  case class DocExample(body: String) extends DocToken
+  case object DocExample extends DocKind
 
   /**
     * TODO
     */
-  case class DocUseCase(simpleDefinition: String) extends DocToken
+  case object DocUseCase extends DocKind
 
   /**
     * Attributes an entity to one author.
     */
-  case class DocAuthor(author: String) extends DocToken
+  case object DocAuthor extends DocKind
 
   /**
     * The version of the system or API that a class, trait, object or
     * package is part of.
     */
-  case class DocVersion(version: String) extends DocToken
+  case object DocVersion extends DocKind
 
   /**
     * The version of the system or API that an entity was first defined in.
     */
-  case class DocSince(version: String) extends DocToken
+  case object DocSince extends DocKind
 
   /**
     * Documents unimplemented features in an entity.
     */
-  case class DocTodo(body: String) extends DocToken
+  case object DocTodo extends DocKind
 
   /**
     * Marks an entity as deprecated. The message should
     * describe replacement implementation.
     */
-  case class DocDeprecated(body: String) extends DocToken
+  case object DocDeprecated extends DocKind
 
   /**
     * Like [[DocDeprecated]] but provides advanced warning of
     * planned changes ahead of deprecation.
     */
-  case class DocMigration(body: String) extends DocToken
+  case object DocMigration extends DocKind
 
   /**
     * Take comments from a superclass as defaults if comments
     * are not provided locally.
     */
-  case object DocInheritDoc extends DocToken
+  case object DocInheritDoc extends DocKind
 
   /**
     * Documents an untagged scaladoc description.
     */
-  case class DocText(body: String) extends DocToken
+  case object DocText extends DocKind
 
 }

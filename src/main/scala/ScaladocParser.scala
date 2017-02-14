@@ -5,7 +5,7 @@ import scala.meta.tokens.Token.Comment
 
 object ScaladocParser {
 
-  def parseScaladoc(comment : Comment) : Seq[DocToken] = {
+  def parseScaladoc(comment: Comment): Seq[DocToken] = {
 
     val trimmedComment: String = comment.show[Syntax].trim
 
@@ -21,61 +21,62 @@ object ScaladocParser {
     lineSeparedDocString.map(parseScaladocLine)
   }
 
-  private[this] def parseScaladocLine(docLine: String) : DocToken = {
+  private[this] def parseScaladocLine(docLine: String): DocToken = {
     docLine match {
       // DocConstructor
       case _ if docLine.startsWith("@constructor") =>
-        DocConstructor(docLine.replaceFirst("@constructor", "").trim)
+        DocToken(DocConstructor, docLine.replaceFirst("@constructor", "").trim)
       // DocParam
       case _ if docLine.startsWith("@param") =>
-        DocParam.tupled(splitNameAndBody(docLine, "@param"))
+        prepareMultipleParameterToken(DocParam, docLine, "@param")
       // DocTypeParam
       case _ if docLine.startsWith("@tparam") =>
-        DocTypeParam.tupled(splitNameAndBody(docLine, "@tparam"))
+        prepareMultipleParameterToken(DocTypeParam, docLine, "@tparam")
       // DocReturn
       case _ if docLine.startsWith("@return") =>
-        DocReturn(docLine.replaceFirst("@return", "").trim)
+        DocToken(DocReturn, docLine.replaceFirst("@return", "").trim)
       // DocThrows
       case _ if docLine.startsWith("@throws") =>
-        DocThrows.tupled(splitNameAndBody(docLine, "@throws"))
+        prepareMultipleParameterToken(DocThrows, docLine, "@throws")
       // DocSee
       case _ if docLine.startsWith("@see") =>
-        DocSee(docLine.replaceFirst("@see", "").trim)
+        DocToken(DocSee, docLine.replaceFirst("@see", "").trim)
       // DocNote
       case _ if docLine.startsWith("@note") =>
-        DocNote(docLine.replaceFirst("@note", "").trim)
+        DocToken(DocNote, docLine.replaceFirst("@note", "").trim)
       // DocExample
       case _ if docLine.startsWith("@example") =>
-        DocExample(docLine.replaceFirst("@example", "").trim)
+        DocToken(DocExample, docLine.replaceFirst("@example", "").trim)
       // DocUseCase
       case _ if docLine.startsWith("@usecase") =>
-        DocUseCase(docLine.replaceFirst("@usecase", "").trim)
+        DocToken(DocUseCase, docLine.replaceFirst("@usecase", "").trim)
       // DocAuthor
       case _ if docLine.startsWith("@author") =>
-        DocAuthor(docLine.replaceFirst("@author", "").trim)
+        DocToken(DocAuthor, docLine.replaceFirst("@author", "").trim)
       // DocVersion
       case _ if docLine.startsWith("@version") =>
-        DocVersion(docLine.replaceFirst("@version", "").trim)
+        DocToken(DocVersion, docLine.replaceFirst("@version", "").trim)
       // DocSince
       case _ if docLine.startsWith("@since") =>
-        DocSince(docLine.replaceFirst("@since", "").trim)
-        // DocTodo
+        DocToken(DocSince, docLine.replaceFirst("@since", "").trim)
+      // DocTodo
       case _ if docLine.startsWith("@todo") =>
-        DocTodo(docLine.replaceFirst("@todo", "").trim)
-        // TODO: Migration / Deprecated
-        // DocInheritDoc
+        DocToken(DocTodo, docLine.replaceFirst("@todo", "").trim)
+      // DocInheritDoc
       case _ if docLine.equals("@inheritdoc") =>
-        DocInheritDoc
+        DocToken(DocInheritDoc, "")
       // DocText
-
-      case text => DocText(text)
+      case text => DocToken(DocText, text)
     }
   }
 
-  private[this] def splitNameAndBody(docLine: String, lineTag : String) : (String, String) = {
-    val nameAndDescription = docLine.replaceFirst(s"$lineTag ", "")
-    val name = nameAndDescription.split(' ').head
-    val description = nameAndDescription.replaceFirst(s"$name ", "")
-    (name, description)
+  private[this] def prepareMultipleParameterToken(docKind: DocKind,
+                                                  docLine: String,
+                                                  label: String): DocToken = {
+
+    val nameAndDescription = docLine.replaceFirst(s"$label ", "")
+    val name: String = nameAndDescription.split(' ').head
+    val description: String = nameAndDescription.replaceFirst(s"$name ", "")
+    DocToken(docKind, name, description)
   }
 }
