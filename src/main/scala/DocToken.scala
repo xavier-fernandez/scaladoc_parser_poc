@@ -10,7 +10,11 @@ case class DocToken(kind: DocKind, name: Option[String], body: String) {
     case _ => s"$kind($body)"
   }
 
-  // TODO: Encapsulate to contrib package?
+  // TODO: Encapsulate append method to the contrib package?
+
+  /**
+    * Appends a this [[DocToken#body]] to the input [[DocToken#body]].
+    */
   def append(docToken: DocToken) : DocToken = copy(body = s"$body\n${docToken.body}")
 }
 
@@ -22,9 +26,15 @@ case class DocToken(kind: DocKind, name: Option[String], body: String) {
   */
 object DocToken {
 
+  /**
+    * Helper [[DocToken]] apply method.
+    */
   def apply(kind: DocKind, body: String): DocToken =
     new DocToken(kind, None, body)
 
+  /**
+    * Helper apply method for named [[DocToken]].
+    */
   def apply(kind: DocKind, name: String, body: String): DocToken =
     new DocToken(kind, Option(name), body)
 
@@ -39,21 +49,12 @@ object DocToken {
   case object DocConstructor extends DocKind
 
   /**
-    * TODO
-    *
     * Documents a specific value parameter of a method or class constructor.
-    * One @param tag allowed per value parameter in comment for method,
-    * constructor or class (documents primary constructor). The
-    * <name> argument must correspond to an existing value parameter.
     */
   case object DocParam extends DocKind
 
   /**
-    * TODO
-    *
     * Documents a specific type parameter of a method, class, trait or abstract type.
-    * One @tparam tag allowed per type parameter in comment for method, class, trait
-    * or abstract type. <name> argument must correspond to an existing type parameter.
     */
   case object DocTypeParam extends DocKind
   /**
@@ -84,7 +85,7 @@ object DocToken {
   case object DocExample extends DocKind
 
   /**
-    * TODO
+    * Documents a use case of a method, class, trait or abstract type.
     */
   case object DocUseCase extends DocKind
 
