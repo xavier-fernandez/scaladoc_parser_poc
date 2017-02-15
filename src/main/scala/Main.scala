@@ -9,7 +9,9 @@ object Main extends App {
   val code =
     """
     /** this is docstring
+      * and this is a multiline continuation.
       * @constructor the constructor description
+      * and this is a constructor continuation.
       * @param foo bar
       * @tparam T a
       * @throws A RuntimeException

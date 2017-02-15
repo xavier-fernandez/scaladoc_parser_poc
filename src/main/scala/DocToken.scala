@@ -5,9 +5,11 @@ import DocToken.DocKind
   */
 case class DocToken(kind: DocKind, name: Option[String], body: String) {
 
-  override def toString: String = name match {
-    case Some(n) => s"$kind(name=$n, body=$body)"
-    case _ => s"$kind($body)"
+  override def toString: String = {
+    (name match {
+      case Some(n) => s"$kind(name=$n, body=$body)"
+      case _ => s"$kind($body)"
+    }).replaceAll("\n", " ")
   }
 
   // TODO: Encapsulate append method to the contrib package?

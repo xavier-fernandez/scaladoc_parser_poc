@@ -18,7 +18,27 @@ object ScaladocParser {
         .map(_.dropWhile(_ != ' ').trim) // Removes trailing comments
         .filter(_.nonEmpty) // Removes empty scaladoc lines
 
-    lineSeparedDocString.map(parseScaladocLine)
+    mergeTokens(
+      lineSeparedDocString.map(parseScaladocLine)
+    )
+  }
+
+  /**
+    * Once the Scaladoc parsing is done, merges multiline [[DocToken]].
+    */
+  private[this] def mergeTokens(docTokens: Seq[DocToken]): Seq[DocToken] = {
+    docTokens.foldLeft(Seq[DocToken]()) {
+      (acc: Seq[DocToken], nextToken: DocToken) => {
+        acc.lastOption match {
+          // If the next token is a DocText, append it to the previous token
+          case Some(previousToken) if nextToken.kind.equals(DocText) =>
+            acc.dropRight(1) :+ previousToken.append(nextToken)
+          // If the documentation is the first one allow everything
+          case _ =>
+            acc :+ nextToken
+        }
+      }
+    }
   }
 
   private[this] def parseScaladocLine(docLine: String): DocToken = {
