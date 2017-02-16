@@ -44,57 +44,61 @@ object ScaladocParser {
   private[this] def parseScaladocLine(docLine: String): DocToken = {
     docLine match {
       // DocConstructor
-      case _ if docLine.startsWith("@constructor") =>
-        DocToken(DocConstructor, docLine.replaceFirst("@constructor", "").trim)
+      case _ if docLine.startsWith(DocConstructor.label) =>
+        DocToken(DocConstructor, docLine.replaceFirst(DocConstructor.label, "").trim)
       // DocParam
-      case _ if docLine.startsWith("@param") =>
-        prepareMultipleParameterToken(DocParam, docLine, "@param")
+      case _ if docLine.startsWith(DocParam.label) =>
+        prepareMultipleParameterToken(DocParam, docLine)
       // DocTypeParam
-      case _ if docLine.startsWith("@tparam") =>
-        prepareMultipleParameterToken(DocTypeParam, docLine, "@tparam")
+      case _ if docLine.startsWith(DocTypeParam.label) =>
+        prepareMultipleParameterToken(DocTypeParam, docLine)
       // DocReturn
-      case _ if docLine.startsWith("@return") =>
-        DocToken(DocReturn, docLine.replaceFirst("@return", "").trim)
+      case _ if docLine.startsWith(DocReturn.label) =>
+        DocToken(DocReturn, docLine.replaceFirst(DocReturn.label, "").trim)
       // DocThrows
-      case _ if docLine.startsWith("@throws") =>
-        prepareMultipleParameterToken(DocThrows, docLine, "@throws")
+      case _ if docLine.startsWith(DocThrows.label) =>
+        prepareMultipleParameterToken(DocThrows, docLine)
       // DocSee
-      case _ if docLine.startsWith("@see") =>
-        DocToken(DocSee, docLine.replaceFirst("@see", "").trim)
+      case _ if docLine.startsWith(DocSee.label) =>
+        DocToken(DocSee, docLine.replaceFirst(DocSee.label, "").trim)
       // DocNote
-      case _ if docLine.startsWith("@note") =>
-        DocToken(DocNote, docLine.replaceFirst("@note", "").trim)
+      case _ if docLine.startsWith(DocNote.label) =>
+        DocToken(DocNote, docLine.replaceFirst(DocNote.label, "").trim)
       // DocExample
-      case _ if docLine.startsWith("@example") =>
-        DocToken(DocExample, docLine.replaceFirst("@example", "").trim)
+      case _ if docLine.startsWith(DocExample.label) =>
+        DocToken(DocExample, docLine.replaceFirst(DocExample.label, "").trim)
       // DocUseCase
-      case _ if docLine.startsWith("@usecase") =>
-        DocToken(DocUseCase, docLine.replaceFirst("@usecase", "").trim)
+      case _ if docLine.startsWith(DocUseCase.label) =>
+        DocToken(DocUseCase, docLine.replaceFirst(DocUseCase.label, "").trim)
       // DocAuthor
-      case _ if docLine.startsWith("@author") =>
-        DocToken(DocAuthor, docLine.replaceFirst("@author", "").trim)
+      case _ if docLine.startsWith(DocAuthor.label) =>
+        DocToken(DocAuthor, docLine.replaceFirst(DocAuthor.label, "").trim)
       // DocVersion
-      case _ if docLine.startsWith("@version") =>
-        DocToken(DocVersion, docLine.replaceFirst("@version", "").trim)
+      case _ if docLine.startsWith(DocVersion.label) =>
+        DocToken(DocVersion, docLine.replaceFirst(DocVersion.label, "").trim)
       // DocSince
-      case _ if docLine.startsWith("@since") =>
-        DocToken(DocSince, docLine.replaceFirst("@since", "").trim)
+      case _ if docLine.startsWith(DocSince.label) =>
+        DocToken(DocSince, docLine.replaceFirst(DocSince.label, "").trim)
       // DocTodo
-      case _ if docLine.startsWith("@todo") =>
-        DocToken(DocTodo, docLine.replaceFirst("@todo", "").trim)
+      case _ if docLine.startsWith(DocTodo.label) =>
+        DocToken(DocTodo, docLine.replaceFirst(DocTodo.label, "").trim)
+      // DocDeprecated
+      case _ if docLine.startsWith(DocDeprecated.label) =>
+        DocToken(DocDeprecated, docLine.replaceFirst(DocDeprecated.label, "").trim)
+      // DocMigration
+      case _ if docLine.startsWith(DocMigration.label) =>
+        DocToken(DocMigration, docLine.replaceFirst(DocMigration.label, "").trim)
       // DocInheritDoc
-      case _ if docLine.equals("@inheritdoc") =>
+      case _ if docLine.equals(DocInheritDoc.label) =>
         DocToken(DocInheritDoc, "")
       // DocText
       case text => DocToken(DocText, text)
     }
   }
 
-  private[this] def prepareMultipleParameterToken(docKind: DocKind,
-                                                  docLine: String,
-                                                  label: String): DocToken = {
+  private[this] def prepareMultipleParameterToken(docKind: DocKind, docLine: String): DocToken = {
 
-    val nameAndDescription = docLine.replaceFirst(s"$label ", "")
+    val nameAndDescription = docLine.replaceFirst(s"${docKind.label} ", "")
     val name: String = nameAndDescription.split(' ').head
     val description: String = nameAndDescription.replaceFirst(s"$name ", "")
     DocToken(docKind, name, description)

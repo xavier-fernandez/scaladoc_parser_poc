@@ -12,8 +12,6 @@ case class DocToken(kind: DocKind, name: Option[String], body: String) {
     }).replaceAll("\n", " ")
   }
 
-  // TODO: Encapsulate append method to the contrib package?
-
   /**
     * Appends a this [[DocToken#body]] to the input [[DocToken#body]].
     */
@@ -41,98 +39,156 @@ object DocToken {
     new DocToken(kind, Option(name), body)
 
   /**
-    * Phantom trait used for representing each type of documentation label.
+    * Trait used for representing each type of documentation label.
     */
-  sealed trait DocKind
+  sealed trait DocKind {
+
+    /**
+      * Scaladoc label of the documentation kind.
+      */
+    val label: String
+  }
 
   /**
     * Placed in the class comment will describe the primary constructor.
     */
-  case object DocConstructor extends DocKind
+  case object DocConstructor extends DocKind {
+
+    override val label: String = "@constructor"
+  }
 
   /**
     * Documents a specific value parameter of a method or class constructor.
     */
-  case object DocParam extends DocKind
+  case object DocParam extends DocKind {
+
+    override val label: String = "@param"
+  }
 
   /**
     * Documents a specific type parameter of a method, class, trait or abstract type.
     */
-  case object DocTypeParam extends DocKind
+  case object DocTypeParam extends DocKind {
+
+    override val label: String = "@tparam"
+  }
+
   /**
     * Documents the return value of a method.
     */
-  case object DocReturn extends DocKind
+  case object DocReturn extends DocKind {
+
+    override val label: String = "@returns"
+  }
 
   /**
     * Documents an exception type that may be thrown by a method or class constructor.
     */
-  case object DocThrows extends DocKind
+  case object DocThrows extends DocKind {
+
+    override val label: String = "@throws"
+  }
 
   /**
     * Points to other sources of information such as external documentation
     * or related entities in the documentation.
     */
-  case object DocSee extends DocKind
+  case object DocSee extends DocKind {
+
+    override val label: String = "@see"
+  }
 
   /**
     * Documents pre- and post-conditions as well as other notable requirements
     * or restrictions.
     */
-  case object DocNote extends DocKind
+  case object DocNote extends DocKind {
+
+    override val label: String = "@note"
+  }
 
   /**
     * Provides example code and related descriptions.
     */
-  case object DocExample extends DocKind
+  case object DocExample extends DocKind {
+
+    override val label: String = "@example"
+  }
 
   /**
     * Documents a use case of a method, class, trait or abstract type.
     */
-  case object DocUseCase extends DocKind
+  case object DocUseCase extends DocKind {
+
+    override val label: String = "@usecase"
+  }
 
   /**
     * Attributes an entity to one author.
     */
-  case object DocAuthor extends DocKind
+  case object DocAuthor extends DocKind {
+
+    override val label: String = "@author"
+  }
 
   /**
     * The version of the system or API that a class, trait, object or
     * package is part of.
     */
-  case object DocVersion extends DocKind
+  case object DocVersion extends DocKind {
+
+    override val label: String = "@version"
+  }
 
   /**
     * The version of the system or API that an entity was first defined in.
     */
-  case object DocSince extends DocKind
+  case object DocSince extends DocKind {
+
+    override val label: String = "@since"
+  }
 
   /**
     * Documents unimplemented features in an entity.
     */
-  case object DocTodo extends DocKind
+  case object DocTodo extends DocKind {
+
+    override val label: String = "@todo"
+  }
 
   /**
     * Marks an entity as deprecated. The message should
     * describe replacement implementation.
     */
-  case object DocDeprecated extends DocKind
+  case object DocDeprecated extends DocKind {
+
+    override val label: String = "@deprecated"
+  }
 
   /**
     * Like [[DocDeprecated]] but provides advanced warning of
     * planned changes ahead of deprecation.
     */
-  case object DocMigration extends DocKind
+  case object DocMigration extends DocKind {
+
+    override val label: String = "@migration"
+  }
 
   /**
     * Take comments from a superclass as defaults if comments
     * are not provided locally.
     */
-  case object DocInheritDoc extends DocKind
+  case object DocInheritDoc extends DocKind {
+
+    override val label: String = "@inheritdoc"
+  }
 
   /**
     * Documents an untagged scaladoc description.
     */
-  case object DocText extends DocKind
+  case object DocText extends DocKind {
+
+    override val label: String = ""
+  }
 
 }
