@@ -41,6 +41,10 @@ object ScaladocParser {
     }
   }
 
+  /**
+    * Parses a Scaladoc line [[String]] into a [[DocToken]]
+    * with the line [[DocKind]], if it is kwown.
+    */
   private[this] def parseScaladocLine(docLine: String): DocToken = {
     docLine match {
       // DocConstructor
@@ -73,6 +77,16 @@ object ScaladocParser {
       case _ if docLine.startsWith(DocDeprecated.label) => prepareSingleParameterToken(DocDeprecated, docLine)
       // DocMigration
       case _ if docLine.startsWith(DocMigration.label) => prepareSingleParameterToken(DocMigration, docLine)
+      // DocGroup
+      case _ if docLine.startsWith(DocGroup.label) => prepareSingleParameterToken(DocGroup, docLine)
+      // DocGroupName
+      case _ if docLine.startsWith(DocGroupName.label) => prepareMultipleParameterToken(DocGroupName, docLine)
+      // DocGroupDescription
+      case _ if docLine.startsWith(DocGroupDescription.label) => prepareMultipleParameterToken(DocGroupDescription, docLine)
+      // DocGroupPriority
+      case _ if docLine.startsWith(DocGroupPriority.label) => prepareSingleParameterToken(DocGroupPriority, docLine)
+      // DocDocumentable
+      case _ if docLine.startsWith(DocDocumentable.label) => prepareSingleParameterToken(DocDocumentable, docLine)
       // DocInheritDoc
       case _ if docLine.equals(DocInheritDoc.label) => DocToken(DocInheritDoc, "")
       // DocOtherTag
@@ -85,9 +99,8 @@ object ScaladocParser {
     }
   }
 
-  private[this] def prepareSingleParameterToken(docKind: DocKind, docLine: String): DocToken = {
+  private[this] def prepareSingleParameterToken(docKind: DocKind, docLine: String): DocToken =
     DocToken(docKind, docLine.replaceFirst(docKind.label, "").trim)
-  }
 
   private[this] def prepareMultipleParameterToken(docKind: DocKind, docLine: String): DocToken = {
 

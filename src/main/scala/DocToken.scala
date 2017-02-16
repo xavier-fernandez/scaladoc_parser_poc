@@ -175,6 +175,49 @@ object DocToken {
   }
 
   /**
+    * Marks the entity as member of the body group.
+    */
+  case object DocGroup extends DocKind {
+
+    override val label: String = "@group"
+  }
+
+  /**
+    * Provide an optional name for the group.
+    */
+  case object DocGroupName extends DocKind {
+
+    override val label: String = "@groupname"
+  }
+
+  /**
+    * Adds an optional descriptive text to display under the group name.
+    */
+  case object DocGroupDescription extends DocKind {
+
+    override val label: String = "@groupdesc"
+  }
+
+  /**
+    * Control the order of the group on the page. Defaults to 0. Ungrouped
+    * elements have an implicit priority of 1000. Use a value between 0 and
+    * 999 to set a relative position to other groups. Low values will appear
+    * before high values.
+    */
+  case object DocGroupPriority extends DocKind {
+
+    override val label: String = "@groupprio"
+  }
+
+  /**
+    * Expand a type alias and abstract type into a full template page.
+    */
+  case object DocDocumentable extends DocKind {
+
+    override val label: String = "@documentable"
+  }
+
+  /**
     * Take comments from a superclass as defaults if comments
     * are not provided locally.
     */
