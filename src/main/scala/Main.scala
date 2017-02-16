@@ -25,6 +25,7 @@ object Main extends App {
       * @todo consider using fastparser
       * @deprecated message version
       * @inheritdoc
+      * @othertag with body
       */
       class A[T](foo: T)
     """.parse[Source].get

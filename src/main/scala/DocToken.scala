@@ -184,6 +184,13 @@ object DocToken {
   }
 
   /**
+    * Represents an unknown tag.
+    */
+  case object DocOtherTag extends DocKind {
+    override val label: String = "@"
+  }
+
+  /**
     * Documents an untagged scaladoc description.
     */
   case object DocText extends DocKind {

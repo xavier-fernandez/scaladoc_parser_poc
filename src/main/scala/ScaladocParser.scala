@@ -75,6 +75,11 @@ object ScaladocParser {
       case _ if docLine.startsWith(DocMigration.label) => prepareSingleParameterToken(DocMigration, docLine)
       // DocInheritDoc
       case _ if docLine.equals(DocInheritDoc.label) => DocToken(DocInheritDoc, "")
+      // DocOtherTag
+      case _ if docLine.startsWith(DocOtherTag.label) =>
+        val label = docLine.trim.split(" ").head
+        val description = docLine.replaceFirst(label, "").trim
+        DocToken(DocOtherTag, label, description)
       // DocText
       case text => DocToken(DocText, text)
     }
