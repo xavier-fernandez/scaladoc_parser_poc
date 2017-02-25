@@ -39,9 +39,10 @@ object ScaladocParser {
     docTokens.foldLeft(Seq[DocToken]()) {
       (acc: Seq[DocToken], nextToken: DocToken) => {
         acc.lastOption match {
-          // If the next token is a DocText, append it to the previous token
-          case Some(previousToken) if nextToken.kind.equals(Description) =>
-            acc.dropRight(1) :+ previousToken.append(nextToken.body)
+          // If the next token is a DocText, append it to the previous token if it is not an inherit doc
+          case Some(previousToken)
+            if nextToken.kind.equals(Description) &&
+              previousToken.kind != InheritDoc => acc.dropRight(1) :+ previousToken.append(nextToken.body)
           // If the documentation is the first one allow everything
           case _ =>
             acc :+ nextToken
