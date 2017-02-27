@@ -194,6 +194,11 @@ object DocToken {
   case object Documentable extends TagKind("@documentable", numberParameters = 1)
 
   /**
+    * Represents an empty scaladoc line.
+    */
+  case object Paragraph extends Kind
+
+  /**
     * Take comments from a superclass as defaults if comments
     * are not provided locally.
     */

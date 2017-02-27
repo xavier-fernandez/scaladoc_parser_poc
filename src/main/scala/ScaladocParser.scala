@@ -16,7 +16,17 @@ object ScaladocParser {
         .find(_.parse(toParse).index != 0)
         .map(_.parse(toParse)) match {
         case Some(p: Parsed.Success[DocToken, _, _]) =>
-          Seq(p.value) ++ parseRec(toParse.substring(p.index, toParse.length).trim)
+          // Parse was successful, check the remaining scaladoc
+          val remainingScaladoc = toParse.substring(p.index, toParse.length)
+          // If only paragraphs are missing continue
+          if (remainingScaladoc.trim.nonEmpty || remainingScaladoc.contains("\n\n")) {
+            // Adds the parsed token to the list of tokens and parse the rest of the string recursively.
+            Seq(p.value) ++ parseRec(remainingScaladoc.dropWhile(_ == " "))
+          } else {
+            // No more elements to parse, end recursion.
+            Seq(p.value)
+          }
+        // Can't parse anymore, end recursion.
         case _ => Seq()
       }
     }
@@ -46,7 +56,7 @@ object ScaladocParser {
       .lines
       .map(_.dropWhile(scaladocSymbols.contains)) // Removes leading comments symbols
       .map(l => l.take(l.lastIndexWhere(!scaladocSymbols.contains(_)) + 1)) // Remove trailing comments symbols
-      .filter(_.nonEmpty) // Removes empty scaladoc lines
+      .map(_.trim)
       .toSeq
       .mkString("\n")
   }
@@ -56,7 +66,10 @@ object ScaladocParser {
     */
   private[this] val parsers: Seq[Parser[DocToken]] = {
 
-    val bodyParser = ((AnyChar ~ !("\n@" | "{{{" | End)).rep ~ AnyChar).!.map(_.trim)
+    val bodyParser = ((AnyChar ~ !("\n@" | "{{{" | "\n\n" | End)).rep ~ AnyChar).!.map(_.trim)
+
+    // Paragraph Parser
+    val paragraphParser = "\n\n".rep.!.map(_ => DocToken(Paragraph))
 
     // Parser for CodeBlock instances
     val codeBlockParser =
@@ -98,6 +111,6 @@ object ScaladocParser {
     val descriptionParser = bodyParser.map(DocToken(Description, _))
 
     // Merges all the parsers in a single list, with the description parser as the fallback one.
-    (Seq(inheritDocParser, codeBlockParser) ++ labelledParsers) :+ descriptionParser
+    (Seq(paragraphParser, inheritDocParser, codeBlockParser) ++ labelledParsers) :+ descriptionParser
   }
 }

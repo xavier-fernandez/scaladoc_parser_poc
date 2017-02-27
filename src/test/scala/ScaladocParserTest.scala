@@ -75,84 +75,41 @@ class ScaladocParserTest extends FunSuite {
          """
       ) === expectedResult
     )
-    assert(
-      parseString(
-        s"""
-         /**
-          *
-          *
-          *
-          *$expectedBody
-          */
-          case class foo(bar: String)
-         """
-      ) === expectedResult
-    )
-    assert(
-      parseString(
-        // @formatter:off
-        s"""
-         /**
-          *
-            *
-        *  $expectedBody
-         *
-          */
-          case class foo(bar: String)
-         """.stripMargin
-      ) === expectedResult
-      // @formatter:on
-    )
   }
 
-  // TODO: Add the rest of the labels
-  test("label parsing") {
-
-    // DocText
-    val textPrefix = "Body"
-
-    // DocConstructor
-    val constructorBody = s"$textPrefix-Constructor"
-
-    // DocParam
-    val paramName = "parameterName"
-    val paramBody = s"parameterBody"
-
-    // DocTypeParam
-    val tparamName = "T"
-    val tparamBody = "Simple parameter"
-
-    // DocThrows
-    val throwsName = "IllegalArgumentException"
-    val throwsBody = "when something fails"
-
-    // DocSee
-    val seeBody = "See body"
-
-    // Expectations
-    val expectedStructure = Seq(
-      DocToken(Description, textPrefix),
-      DocToken(Constructor, constructorBody),
-      DocToken(Param, paramName, paramBody),
-      DocToken(TypeParam, tparamName, tparamBody),
-      DocToken(Throws, throwsName, throwsBody),
-      DocToken(See, seeBody)
-    )
-
+  test("paragraph parsing") {
+    val expectedBody = "BODY"
     assert(
       parseString(
         s"""
-        /**
-         * $textPrefix
-         * ${Constructor.label} $constructorBody
-         * ${Param.label} $paramName $paramBody
-         * ${TypeParam.label} $tparamName $tparamBody
-         * ${Throws.label} $throwsName $throwsBody
-         * ${See.label} $seeBody
-         */
-         case class foo(bar: String)
+         /**
+          *
+          *$expectedBody
+          *
+          */
+          case class foo(bar: String)
          """
-      ) === expectedStructure
+      ) === Seq(DocToken(Paragraph), DocToken(Description, expectedBody), DocToken(Paragraph))
+    )
+    assert(
+      parseString(
+        s"""
+         /**
+          *
+          *$expectedBody
+          *
+          *$expectedBody
+          *
+          */
+          case class foo(bar: String)
+         """
+      ) === Seq(
+        DocToken(Paragraph),
+        DocToken(Description, expectedBody),
+        DocToken(Paragraph),
+        DocToken(Description, expectedBody),
+        DocToken(Paragraph)
+      )
     )
   }
 
@@ -179,28 +136,27 @@ class ScaladocParserTest extends FunSuite {
             * $testDescription
             *
             * {{{
-            *
             *   $complexCodeBlock
-            *
             * }}}
             */
             case class foo(bar : String)
        """.stripMargin
       )
 
-    assert(
-      result.map(_.body.getOrElse("")) === Seq(
-        testDescription,
-        codeBlock1,
-        testDescription,
-        codeBlock2,
-        testDescription,
-        complexCodeBlock
-      )
+    val expectation = Seq(
+      DocToken(Description, testDescription),
+      DocToken(CodeBlock, codeBlock1),
+      DocToken(Description, testDescription),
+      DocToken(CodeBlock, codeBlock2),
+      DocToken(Paragraph),
+      DocToken(Description, testDescription),
+      DocToken(Paragraph),
+      DocToken(CodeBlock, complexCodeBlock)
     )
+    assert(result === expectation)
   }
 
-  test("label merging") {
+  test("label parsing/merging") {
     val testStringToMerge = "Test DocText"
     val scaladoc: String =
       DocToken
