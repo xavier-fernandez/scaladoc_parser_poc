@@ -1,31 +1,22 @@
 
 import scala.meta._
 import scala.meta.contrib._
-import scala.meta.contrib.AssociatedComments
 import scala.meta.tokens.Token.Comment
 
 object Main extends App {
 
   val code =
     """
-    /** this is docstring
-      * and this is a multiline continuation.
-      * @constructor the constructor description
-      * and this is a constructor continuation.
-      * @param foo bar
-      * @tparam T a
-      * @throws A RuntimeException
-      * @note this is a test class
-      * @see other classes
-      * @example with an example.
-      * @usecase test scaladoc parser
-      * @author xavierfernandez
-      * @version 0.2
-      * @since 0.1
-      * @todo consider using fastparser
-      * @deprecated message version
-      * @inheritdoc
-      * @othertag with body
+    /**
+      * Test description
+      *
+      * @param Foo bar
+      * @constructor Main constructor
+      *
+      * {{{
+      * def foo: Int = 4
+      * }}}
+      * Bla Bla Bla
       */
       class A[T](foo: T)
     """.parse[Source].get
@@ -35,6 +26,4 @@ object Main extends App {
   val comment: Comment = comments.leading(defnClass).head
 
   println(ScaladocParser.parseScaladoc(comment))
-
 }
-

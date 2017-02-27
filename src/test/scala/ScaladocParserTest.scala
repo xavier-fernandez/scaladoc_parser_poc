@@ -20,7 +20,7 @@ class ScaladocParserTest extends FunSuite {
     ScaladocParser.parseScaladoc(comment)
   }
 
-  private[this] def generateTestString(docKind: Kind): String =
+  private[this] def generateTestString(docKind: TagKind): String =
     s"${docKind.label} ${(0 until docKind.numberParameters).map(i => s"Test$docKind$i").mkString(" ")}"
 
   test("example usage") {
@@ -156,11 +156,55 @@ class ScaladocParserTest extends FunSuite {
     )
   }
 
-  test("Label merging") {
+  test("code blocks") {
+
+    val testDescription = "This is a codeblock:"
+
+    val codeBlock1 = "\"HELLO MARIANO\""
+    val codeBlock2 = "\"HELLO SORAYA\""
+    val complexCodeBlock =
+      """
+        |ggmqwogmwogmqwomgq
+        |gmqwgoiqmgoqmwomw
+      """.stripMargin.trim
+
+    val result: Seq[DocToken] =
+      parseString(
+        s"""
+          /**
+            * $testDescription {{{ $codeBlock1 }}}
+            * $testDescription
+            * {{{ $codeBlock2 }}}
+            *
+            * $testDescription
+            *
+            * {{{
+            *
+            *   $complexCodeBlock
+            *
+            * }}}
+            */
+            case class foo(bar : String)
+       """.stripMargin
+      )
+
+    assert(
+      result.map(_.body.getOrElse("")) === Seq(
+        testDescription,
+        codeBlock1,
+        testDescription,
+        codeBlock2,
+        testDescription,
+        complexCodeBlock
+      )
+    )
+  }
+
+  test("label merging") {
     val testStringToMerge = "Test DocText"
     val scaladoc: String =
       DocToken
-        .labelledTokenKinds
+        .tagTokenKinds
         .flatMap(token => Seq(generateTestString(token), testStringToMerge))
         .mkString("/*\n * ", "\n * ", "\n */")
 
@@ -170,20 +214,16 @@ class ScaladocParserTest extends FunSuite {
         |case class Foo(bar: String)
       """.stripMargin
 
-    println(codeToParse)
-
     val parsedScaladoc: Seq[DocToken] = parseString(codeToParse)
 
-    println(parsedScaladoc.mkString("\n", "\n", "\n"))
-
     // Inherit doc does not merge
-    assert(parsedScaladoc.size === DocToken.labelledTokenKinds.size + 1)
+    assert(parsedScaladoc.size === DocToken.tagTokenKinds.size)
 
     // Inherit doc does not merge
     assert(
       parsedScaladoc
         .filterNot(_.kind == DocToken.InheritDoc)
-        .forall(_.body.endsWith(testStringToMerge))
+        .forall(_.body.getOrElse("").endsWith(testStringToMerge))
     )
   }
 }
