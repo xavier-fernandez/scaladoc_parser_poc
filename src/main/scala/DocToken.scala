@@ -219,4 +219,14 @@ object DocToken {
     */
   case object Description extends Kind
 
+  /**
+    * Documents a Scaladoc Heading.
+    */
+  case object Heading extends Kind
+
+  /**
+    * Documents a Scaladoc sub-heading.
+    */
+  case object SubHeading extends Kind
+
 }
