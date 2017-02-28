@@ -8,15 +8,7 @@ object Main extends App {
   val code =
     """
     /**
-      * Test description
-      *
-      * @param Foo bar
-      * @constructor Main constructor
-      *
-      * {{{
-      * def foo: Int = 4
-      * }}}
-      * Bla Bla Bla
+      * Hola [[scala.Some]]
       */
       class A[T](foo: T)
     """.parse[Source].get
@@ -25,5 +17,20 @@ object Main extends App {
   val defnClass = code.collectFirst { case t: Defn.Class => t }.get
   val comment: Comment = comments.leading(defnClass).head
 
-  println(ScaladocParser.parseScaladoc(comment))
+
+  private val referenceParser = {
+
+    import fastparse.all.{AnyChar, P}
+    import fastparse.all._
+    import fastparse._
+
+    P(
+      ((AnyChar ~ !"[[").rep ~ AnyChar).? ~
+      "[[" ~
+        ((AnyChar ~ !"]]").rep ~ AnyChar).!  ~
+        "]]"
+    )
+  }
+
+  println(referenceParser.parse(ScaladocParser.parseScaladoc(comment).head.body.get))
 }

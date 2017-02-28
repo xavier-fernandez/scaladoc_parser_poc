@@ -1,4 +1,3 @@
-
 import org.scalatest.FunSuite
 
 import scala.meta.contrib._
@@ -167,15 +166,14 @@ class ScaladocParserTest extends FunSuite {
   test("label parsing/merging") {
     val testStringToMerge = "Test DocText"
     val scaladoc: String =
-      DocToken
-        .tagTokenKinds
+      DocToken.tagTokenKinds
         .flatMap(token => Seq(generateTestString(token), testStringToMerge))
         .mkString("/*\n * ", "\n * ", "\n */")
 
-    val codeToParse : String =
+    val codeToParse: String =
       s"""
-        |$scaladoc
-        |case class Foo(bar: String)
+         |$scaladoc
+         |case class Foo(bar: String)
       """.stripMargin
 
     val parsedScaladoc: Seq[DocToken] = parseString(codeToParse)
@@ -188,6 +186,25 @@ class ScaladocParserTest extends FunSuite {
       parsedScaladoc
         .filterNot(_.kind == DocToken.InheritDoc)
         .forall(_.body.getOrElse("").endsWith(testStringToMerge))
+    )
+  }
+
+  test("references") {
+
+    val reference1 = "Scala.some"
+    val reference2 = "java.util.Random"
+
+    val codeToParse: String =
+      s"""
+         |/**
+         | * Random description with references [[$reference1]] and [[$reference2]].
+         | */
+         |case class Foo(bar: String) extends AnyVal
+      """.stripMargin
+
+    assert(
+      parseString(codeToParse).head.references ===
+        Seq(DocToken.Reference(reference1), DocToken.Reference(reference2))
     )
   }
 }

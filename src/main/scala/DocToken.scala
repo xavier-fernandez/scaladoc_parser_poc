@@ -1,9 +1,10 @@
-import DocToken.Kind
+import fastparse.all._
+import fastparse.core.Parsed
 
 /**
   * Represents a scaladoc line.
   */
-case class DocToken(kind: Kind, name: Option[String], body: Option[String]) {
+case class DocToken(kind: DocToken.Kind, name: Option[String], body: Option[String]) {
 
   override def toString: String = {
     ((name, body) match {
@@ -12,6 +13,27 @@ case class DocToken(kind: Kind, name: Option[String], body: Option[String]) {
       case _ => kind.toString
     }).replaceAll("\n", " ")
   }
+
+  /**
+    * Obtains all the references from a [[DocToken]].
+    */
+  def references: Seq[DocToken.Reference] =
+    body
+      .map { b =>
+      {
+        def parseBodyFrom(idx: Int): Seq[DocToken.Reference] = {
+          DocToken.referenceParser
+            .parse(b, idx) match {
+            case p: Parsed.Success[String, _, _] =>
+              Seq(DocToken.Reference(p.value)) ++ parseBodyFrom(p.index)
+            case _ => Seq[DocToken.Reference]()
+          }
+        }
+
+        parseBodyFrom(0)
+      }
+      }
+      .getOrElse(Nil)
 }
 
 /**
@@ -21,6 +43,26 @@ case class DocToken(kind: Kind, name: Option[String], body: Option[String]) {
   * @see http://docs.scala-lang.org/overviews/scaladoc/for-library-authors.html
   */
 object DocToken {
+
+  /**
+    * Parser that for obtaining a class reference like '[[scala.Some]]' from an scaladoc body.
+    */
+  private val referenceParser = P(
+    // Removes the elements previous to the references.
+    ((AnyChar ~ !"[[").rep ~ AnyChar).?
+      // Retrieves the element within a
+      ~ "[[" ~
+      ((AnyChar ~ !"]]").rep ~ AnyChar).!
+      ~ "]]"
+  )
+
+  /**
+    * Represents an documentation code reference, like '[[scala.Some]]'.
+    */
+  case class Reference(to: String) extends AnyVal {
+
+    override def toString: String = s"[[$to]]"
+  }
 
   /**
     * Returns all the labelled token kinds.
@@ -57,8 +99,7 @@ object DocToken {
   /**
     * Represents a labeled documentation remark.
     */
-  sealed abstract class TagKind(val label: String,
-                                val numberParameters: Int) extends Kind
+  sealed abstract class TagKind(val label: String, val numberParameters: Int) extends Kind
 
   /**
     * Helper [[DocToken]] apply method.
